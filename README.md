@@ -1,3 +1,21 @@
+# README #
+
+EternaBlue vulnerability scanner
+
+### How do I get set up? ###
+
+* NodeJS 7.4.0
+* Electron 1.6.8
+* Python 2.7 (to run base exploit scanner for reference)
+
+### TODO ###
+
+* Finish SMB protocol negotation, only first step gets an answer
+* Scan all IPs in the given range
+* IPC to send results from scanner window to main window
+* Lots of cleaning and refactoring
+
+###### Electron's default README #######################################
 # electron-quick-start
 
 **Clone and run for a quick way to see Electron in action.**
