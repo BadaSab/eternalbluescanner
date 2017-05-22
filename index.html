@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Hello World!</title>
+	<!-- Stylesheets -->
+	<link rel="stylesheet" href="css/photon.css">
+</head>
+
+<body>
+	<div class="window">
+		<header class="toolbar toolbar-header" style="-webkit-app-region: drag">
+			<h1 class="title">EternalBlue Scanner</h1>
+			<div class="toolbar-actions">
+    		
+				<div class="btn-group">
+					<input required id="iniIP" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" type="search" class="ip-control" placeholder="192.168.1.1"> -
+					<input required id="endIP" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" type="search" class="ip-control" placeholder="192.168.1.255">
+				</div>
+
+				<button id="btnPlay" class="btn btn-default">
+					<span class="icon icon-play icon-text"></span>
+					Scan
+				</button>
+
+				<button id="btnClose" class="btn btn-default pull-right">
+					<span class="icon icon-cancel-circled"></span>
+				</button>
+			</div>
+		</header>
+		<div class="window-content">
+			<div class="pane-group">
+				<div class="pane-sm sidebar">
+
+				</div>
+				<div class="pane">
+					<!-- Results table -->
+					<table class="table-striped">
+						<thead>
+							<tr>
+								<th>Address</th>
+								<th>Vulnerable</th>
+								<th>Exploited</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>192.168.1.1</td>
+								<td>YES</td>
+								<td>NO</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<footer class="toolbar toolbar-footer">
+			<h1 id="footerMessage" class="title">Ready to scan</h1>
+		</footer>
+	</div>
+</body>
+
+<script>
+	// You can also require other files to run in this process
+	require('./renderer.js')
+</script>
+
+</html>
