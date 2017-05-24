@@ -38,10 +38,15 @@
                     break;
                 case 2:
                     var user_id=responses[1].slice(32,34)
-                    console.log("Sending user_id : " + user_id + " and tree connect : " + smb.tree_connect_andx_request())
+                    console.log("Sending tree connect : " + smb.tree_connect_andx_request(host,user_id))
                     currentHost.write(smb.tree_connect_andx_request(host,user_id))
                     break;
-            
+                case 3:
+                    // Send last packet
+                    break;
+                case 4:
+                    // Get response, check if host is vulnerable
+                    break;
                 default:
                     break;
             }
