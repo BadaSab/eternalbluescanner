@@ -15,8 +15,9 @@
         var status = null
         var error = null
         var timeout = 100000
-        var host = "192.168.56.101"
+        var host = "192.168.1.118"
         var port = 445
+        var hostOS 
 
         // Socket connection established, port is open
         currentHost.on('connect', function () {
@@ -38,14 +39,27 @@
                     break;
                 case 2:
                     var user_id=responses[1].slice(32,34)
+                    var host_id=responses[1].slice(45,responses[1].length)
+                    hostOS=host_id.toString('utf8')
                     console.log("Sending tree connect : " + smb.tree_connect_andx_request(host,user_id))
                     currentHost.write(smb.tree_connect_andx_request(host,user_id))
                     break;
                 case 3:
-                    // Send last packet
+		            var tree_id=responses[2].slice(28,30)
+		            var process_id=responses[2].slice(30,32)
+	            	var user_id=responses[2].slice(32,34)
+	            	var multiplex_id=responses[2].slice(34,36)
+                    console.log("Sending tree connect : " + smb.peeknamedpipe_request(tree_id,process_id,user_id,multiplex_id))
+                    currentHost.write(smb.peeknamedpipe_request(tree_id,process_id,user_id,multiplex_id))                    
                     break;
                 case 4:
-                    // Get response, check if host is vulnerable
+                    var status=responses[3].slice(9,13)
+                    var vulnerable = new Buffer([0x05,0x02,0x00,0xC0])
+                    if (status.equals(vulnerable)) {
+                        console.log("Host " + host + " [" + hostOS + "] is vulnerable")
+                    } else {
+                        console.log("Host " + host + " [" + hostOS + "] is not vulnerable")
+                    }
                     break;
                 default:
                     break;
