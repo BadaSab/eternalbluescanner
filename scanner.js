@@ -1,6 +1,8 @@
 (function () {
       
     const remote = require('electron').remote;
+    const ipc = require('electron').ipcRenderer
+    const BrowserWindow = require('electron').remote.BrowserWindow
 
     var smb=require('./libs/smb.js')
 
@@ -8,14 +10,22 @@
     var Socket = net.Socket
     var responses=[]
       
-    function init() { 
+    function init() { }
+
+    ipc.on('scan-range', function (event, iniIP, endIP, fromWindowId) {
+      const fromWindow = BrowserWindow.fromId(fromWindowId)
+      scan("192.168.1.115")
+      //fromWindow.webContents.send('factorial-computed', number, result)
+      //window.close()
+    })
+    
+    function scan(host) { 
         var currentHost = new Socket({
             allowHalfOpen:true
         })
         var status = null
         var error = null
-        var timeout = 100000
-        var host = "192.168.1.118"
+        var timeout = 10000
         var port = 445
         var hostOS 
 
@@ -38,7 +48,7 @@
                     currentHost.write(smb.session_setup_andx_request())
                     break;
                 case 2:
-                    var user_id=responses[1].slice(32,34)
+                    var user_id=new Buffer([responses[1][32],responses[1][33]])//responses[1].slice(32,34)
                     var host_id=responses[1].slice(45,responses[1].length)
                     hostOS=host_id.toString('utf8')
                     console.log("Sending tree connect : " + smb.tree_connect_andx_request(host,user_id))
@@ -49,7 +59,7 @@
 		            var process_id=responses[2].slice(30,32)
 	            	var user_id=responses[2].slice(32,34)
 	            	var multiplex_id=responses[2].slice(34,36)
-                    console.log("Sending tree connect : " + smb.peeknamedpipe_request(tree_id,process_id,user_id,multiplex_id))
+                    console.log("Sending peeknamedpipe : " + smb.peeknamedpipe_request(tree_id,process_id,user_id,multiplex_id))
                     currentHost.write(smb.peeknamedpipe_request(tree_id,process_id,user_id,multiplex_id))                    
                     break;
                 case 4:

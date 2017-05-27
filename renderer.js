@@ -4,7 +4,10 @@
 (
     function () {
       
-      const remote = require('electron').remote; 
+      const remote = require('electron').remote;
+      const BrowserWindow = require('electron').remote.BrowserWindow
+      const url = require('url')
+      const path = require('path')
       
       /// init
       function init() { 
@@ -19,9 +22,9 @@
             // Validate IPs
             var iniIP=document.getElementById("iniIP").value;
             var endIP=document.getElementById("endIP").value;
-            var launchScan = remote.require('./main').launchScan;
+            //var launchScan = remote.require('./main').launchScan;
             if (ValidateIP(iniIP) && ValidateIP(endIP)) {
-                launchScan();
+                launchScan(iniIP,endIP);
             }
         });        
       }
@@ -31,11 +34,36 @@
         //return regex.test(IP);
         return true;
       }
+
+      function launchScan(iniIP,endIP) {
+        var scanWindow = new BrowserWindow({width: 400, height: 225, show:false})
+        scanWindow.loadURL(url.format({
+          pathname: path.join(__dirname, 'scan.html'),
+          protocol: 'file:',
+          slashes: true
+        }))
+
+        scanWindow.webContents.on('did-finish-load', function () {
+          const windowID = BrowserWindow.getFocusedWindow().id
+          scanWindow.webContents.send('scan-range', iniIP, endIP, windowID)
+        })
+
+        // Open the DevTools.
+        scanWindow.webContents.openDevTools()
+        // Emitted when the window is closed.
+        scanWindow.on('closed', function () {
+          // Dereference the window object, usually you would store windows
+          // in an array if your app supports multi windows, this is the time
+          // when you should delete the corresponding element.
+          scanWindow = null
+        })
+      }
       
       document.onreadystatechange = function () {
         if (document.readyState == "complete") {
           init(); 
         }
       };
-    }
-    )();
+    }  
+)();
+
