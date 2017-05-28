@@ -19,11 +19,12 @@ function createWindow () {
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
     protocol: 'file:',
-    slashes: true
+    slashes: true,
+    icon: path.join(__dirname, 'icons/png/icon_64x64.png')
   }))
 
   // Open the DevTools.
- mainWindow.webContents.openDevTools()
+ //mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {

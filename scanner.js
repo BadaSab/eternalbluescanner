@@ -5,16 +5,24 @@
     const BrowserWindow = require('electron').remote.BrowserWindow
 
     var smb=require('./libs/smb.js')
-
     var net = require('net')
     var Socket = net.Socket
-    var responses=[]
+
+    var fromWindow
       
     function init() { }
 
     ipc.on('scan-range', function (event, iniIP, endIP, fromWindowId) {
-      const fromWindow = BrowserWindow.fromId(fromWindowId)
-      scan("192.168.1.115")
+      fromWindow = BrowserWindow.fromId(fromWindowId)
+      var iniIPArray=iniIP.split(".")
+      var endIPArray=endIP.split(".")
+      var first = iniIPArray.pop()
+      var last = endIPArray.pop()
+      for (var index = first; index <= last; index++) {
+          var host = iniIPArray.join('.')
+          console.log("Scanning : " + host + "." + index)
+          scan(host + "." + index)
+      }
       //fromWindow.webContents.send('factorial-computed', number, result)
       //window.close()
     })
@@ -27,7 +35,8 @@
         var error = null
         var timeout = 10000
         var port = 445
-        var hostOS 
+        var hostOS
+        var responses=[]
 
         // Socket connection established, port is open
         currentHost.on('connect', function () {
@@ -66,10 +75,13 @@
                     var status=responses[3].slice(9,13)
                     var vulnerable = new Buffer([0x05,0x02,0x00,0xC0])
                     if (status.equals(vulnerable)) {
+                        fromWindow.webContents.send('host-scanned', host, true, hostOS)
                         console.log("Host " + host + " [" + hostOS + "] is vulnerable")
                     } else {
+                        fromWindow.webContents.send('host-scanned', host, false, hostOS)
                         console.log("Host " + host + " [" + hostOS + "] is not vulnerable")
                     }
+                    currentHost.destroy()
                     break;
                 default:
                     break;
@@ -82,6 +94,9 @@
             status = 'closed'
             console.log("Received data : " + currentHost.bytesRead)
             console.log('Timeout (' + timeout + 'ms) occurred waiting for ' + host + ':' + port + ' to be available')
+            if (responses.length>0) {
+                fromWindow.webContents.send('host-scanned', host, "error", hostOS)
+            }
             currentHost.destroy()
         })
 
@@ -89,12 +104,14 @@
         // exception
         currentHost.on('error', function (exception) {
             console.log("error: " + exception.code)
+            fromWindow.webContents.send('host-scanned', host, exception.code, hostOS)
             if (exception.code !== 'ECONNREFUSED') {
             error = exception
             } else {
             connectionRefused = true
             }
             status = 'closed'
+            currentHost.destroy()
         })
 
         currentHost.connect(port,host)

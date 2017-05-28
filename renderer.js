@@ -6,13 +6,21 @@
       
       const remote = require('electron').remote;
       const BrowserWindow = require('electron').remote.BrowserWindow
+      const ipcRenderer = require('electron').ipcRenderer
       const url = require('url')
       const path = require('path')
+
+      var scanWindow
+      var resTable = document.getElementById("resTable")
       
       /// init
       function init() { 
         // Close button
         document.getElementById("btnClose").addEventListener("click", function (e) {
+          if (scanWindow!=null) {
+            scanWindow.close()
+            scanWindow=null
+          }
           const window = remote.getCurrentWindow();
           window.close();
         });
@@ -25,18 +33,19 @@
             //var launchScan = remote.require('./main').launchScan;
             if (ValidateIP(iniIP) && ValidateIP(endIP)) {
                 launchScan(iniIP,endIP);
+            } else {
+              alert("Invalid IP range")
             }
         });        
       }
 
       function ValidateIP(IP) {
-        //var regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        //return regex.test(IP);
-        return true;
+        var regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        return regex.test(IP);
       }
 
       function launchScan(iniIP,endIP) {
-        var scanWindow = new BrowserWindow({width: 400, height: 225, show:false})
+        scanWindow = new BrowserWindow({width: 400, height: 225, show:false})
         scanWindow.loadURL(url.format({
           pathname: path.join(__dirname, 'scan.html'),
           protocol: 'file:',
@@ -49,7 +58,7 @@
         })
 
         // Open the DevTools.
-        scanWindow.webContents.openDevTools()
+        //scanWindow.webContents.openDevTools()
         // Emitted when the window is closed.
         scanWindow.on('closed', function () {
           // Dereference the window object, usually you would store windows
@@ -58,6 +67,16 @@
           scanWindow = null
         })
       }
+
+      ipcRenderer.on('host-scanned', function (event, host, vulnerable, hostOS) {
+        var row = resTable.insertRow()
+        var cHost = row.insertCell(0)
+        var cVulnerable = row.insertCell(1)
+        var cHostOS = row.insertCell(2)
+        cHost.innerHTML=host
+        cVulnerable.innerHTML=vulnerable
+        cHostOS.innerHTML=hostOS
+      })
       
       document.onreadystatechange = function () {
         if (document.readyState == "complete") {

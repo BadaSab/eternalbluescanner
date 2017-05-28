@@ -8,7 +8,7 @@
             "name": "Debug",
             "type": "chrome",
             "request": "launch",
-            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd",
             "runtimeArgs": [
                 "${workspaceRoot}",
                 "--enable-logging",
