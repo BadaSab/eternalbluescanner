@@ -4,9 +4,13 @@
   "description": "Scans desired IP range for unpatched machines",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=icons/mac/icon.icns --prune=true --out=release-builds",
+    "package-win": "electron-packager . --overwrite --asar=true --platform=win32 --arch=ia32 --icon=icons/win/icon.ico --prune=true --out=release-builds --version-string.CompanyName=smartst --version-string.FileDescription=CE --version-string.ProductName=\"Eternalblue Scanner\"",
+    "package-linux": "electron-packager . --overwrite --platform=linux --arch=x64 --icon=icons/png/icon256x256.png --prune=true --out=release-builds",
+    "create-installer-win": "node installers/windows/createinstaller.js"
   },
-  "repository": "https://github.com/mvila/eternalblue",
+  "repository": "https://github.com/mvila/eternalbluescanner",
   "keywords": [
     "EternalBlue",
     "smb",
@@ -15,6 +19,8 @@
   "author": "mvila",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "~1.6.2"
+    "electron": "^1.6.10",
+    "electron-packager": "^8.7.0",
+    "electron-winstaller": "^2.5.2"
   }
 }
