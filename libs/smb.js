@@ -32,11 +32,14 @@ exports.session_setup_andx_request = function() {
 
 exports.tree_connect_andx_request = function(ip, userid) {
     var ipc = Buffer.from(utf8_encode("\\\\" + ip + "\\IPC$"),'utf8')
-    var data1 = new Buffer([
-        0x00,0x00,0x00,0x47,
+    var data11 = new Buffer([
+        0x00,0x00,0x00,0x47
+        ])
+    var data12 = new Buffer([
         0xFF,0x53,0x4D,0x42,0x75,0x00,0x00,0x00,0x00,0x18,
         0x01,0x20,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-        0x00,0x00,0x00,0x00,0x00,0x00,0x2F,0x4B])
+        0x00,0x00,0x00,0x00,0x00,0x00,0x2F,0x4B
+        ])
     var data2 = new Buffer([
         0xC5,0x5E,
         0x04,0xFF,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x1A,
@@ -45,10 +48,10 @@ exports.tree_connect_andx_request = function(ip, userid) {
     var data3 = new Buffer([
         0x00,0x3f,0x3f,0x3f,0x3f,0x3f,0x00
     ])
-    var length=data1.byteLength
-    var bufflength=data1.slice(3,3)
-    bufflength=length;
-    return Buffer.concat([data1,userid,data2,ipc,data3]);
+    var smbpacket = Buffer.concat([data12,userid,data2,ipc,data3])
+    var length=smbpacket.byteLength
+    data11[3]=length
+    return Buffer.concat([data11,smbpacket])
 }
 
 exports.peeknamedpipe_request = function(treeid, processid, userid, multiplex_id) {
