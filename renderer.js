@@ -9,9 +9,11 @@
       const ipcRenderer = require('electron').ipcRenderer
       const url = require('url')
       const path = require('path')
+      var dns = require('dns');
 
       var scanWindow
       var resTable = document.getElementById("resTable")
+      var resTableBody = document.getElementById("results")
       
       /// init
       function init() { 
@@ -68,11 +70,41 @@
         })
       }
 
+      function reverseLookup(ip) {
+        dns.reverse(ip,function(err,domains){
+          if(err!=null)	callback(err);
+
+          domains.forEach(function(domain){
+            dns.lookup(domain,function(err, address, family){
+                  for (var i = 2, row; row = resTable.rows[i]; i++) {
+                    //iterate through rows
+                    if (row.cells[0].innerHTML==address) {
+                      row.cells[1].innerHTML=domain
+                    }
+                  }
+            });
+          });
+        });
+      }
+
       ipcRenderer.on('host-scanned', function (event, host, vulnerable, hostOS) {
-        var row = resTable.insertRow()
-        var cHost = row.insertCell(0)
-        var cVulnerable = row.insertCell(1)
-        var cHostOS = row.insertCell(2)
+        reverseLookup(host)
+        var newRow
+        if (resTable.rows.length>2) {
+          for (var i = 2, row; row = resTable.rows[i]; i++) {
+            //iterate through rows
+            if (row.cells[0].innerHTML>host) {
+              break;
+            }
+          }
+          newRow = resTable.insertRow(i)
+        } else {
+          newRow = resTable.insertRow()
+        }
+        var cHost = newRow.insertCell(0)
+        var cHostDNS = newRow.insertCell(1)
+        var cVulnerable = newRow.insertCell(2)
+        var cHostOS = newRow.insertCell(3)
         cHost.innerHTML=host
         cVulnerable.innerHTML=vulnerable
         cHostOS.innerHTML=hostOS
