@@ -10,6 +10,7 @@
       const url = require('url')
       const path = require('path')
       var dns = require('dns');
+      var Scan=require('./model/scan.js')
 
       var scanWindow
       var resTable = document.getElementById("resTable")
@@ -55,7 +56,8 @@
         }))
 
         scanWindow.webContents.on('did-finish-load', function () {
-          const windowID = BrowserWindow.getFocusedWindow().id
+          //const windowID = BrowserWindow.getFocusedWindow().id
+          const windowID = remote.getCurrentWindow().id
           scanWindow.webContents.send('scan-range', iniIP, endIP, windowID)
         })
 
@@ -87,13 +89,26 @@
         });
       }
 
-      ipcRenderer.on('host-scanned', function (event, host, vulnerable, hostOS) {
+    function compareIP( a, b )
+    {
+        var aa = a.split(".");
+        var bb = b.split(".");
+        
+        return ( aa[0]*0x1000000 + aa[1]*0x10000 + aa[2]*0x100 + aa[3]*1 )
+             - ( bb[0]*0x1000000 + bb[1]*0x10000 + bb[2]*0x100 + bb[3]*1 );
+    }
+
+    ipcRenderer.on('scan-updated', function (event, scanResults) {
+        alert(scanResults.getIPRange)
+    })
+
+    ipcRenderer.on('host-scanned', function (event, host, vulnerable, hostOS) {
         reverseLookup(host)
         var newRow
         if (resTable.rows.length>2) {
           for (var i = 2, row; row = resTable.rows[i]; i++) {
             //iterate through rows
-            if (row.cells[0].innerHTML>host) {
+            if (compareIP(row.cells[0].innerHTML,host)>0) {
               break;
             }
           }

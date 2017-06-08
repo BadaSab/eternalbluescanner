@@ -5,8 +5,10 @@
     const BrowserWindow = require('electron').remote.BrowserWindow
 
     var smb=require('./libs/smb.js')
+    var Scan=require('./model/scan.js')
     var net = require('net')
     var Socket = net.Socket
+    var scanResults
 
     var fromWindow
       
@@ -14,16 +16,19 @@
 
     ipc.on('scan-range', function (event, iniIP, endIP, fromWindowId) {
       fromWindow = BrowserWindow.fromId(fromWindowId)
+      scanResults = new Scan(iniIP,endIP)
       var iniIPArray=iniIP.split(".")
       var endIPArray=endIP.split(".")
-      var first = iniIPArray.pop()
-      var last = endIPArray.pop()
-      for (var index = first; index <= last; index++) {
-          var host = iniIPArray.join('.')
-          console.log("Scanning : " + host + "." + index)
-          scan(host + "." + index)
+      var first = iniIPArray[0]*0x1000000 + iniIPArray[1]*0x10000 + iniIPArray[2]*0x100 + iniIPArray[3]*1
+      var last = endIPArray[0]*0x1000000 + endIPArray[1]*0x10000 + endIPArray[2]*0x100 + endIPArray[3]*1
+      for (var index = first; index < last; index++) {
+        var oc4 = (index>>24) & 0xff;
+        var oc3 = (index>>16) & 0xff;
+        var oc2 = (index>>8) & 0xff;
+        var oc1 = index & 0xff;
+        var host = oc4 + "." + oc3 + "." + oc2 + "." + oc1
+        scan(host)
       }
-      //fromWindow.webContents.send('factorial-computed', number, result)
       //window.close()
     })
     
@@ -74,13 +79,11 @@
                 case 4:
                     var status=responses[3].slice(9,13)
                     var vulnerable = new Buffer([0x05,0x02,0x00,0xC0])
-                    if (status.equals(vulnerable)) {
-                        fromWindow.webContents.send('host-scanned', host, true, hostOS)
-                        console.log("Host " + host + " [" + hostOS + "] is vulnerable")
-                    } else {
-                        fromWindow.webContents.send('host-scanned', host, false, hostOS)
-                        console.log("Host " + host + " [" + hostOS + "] is not vulnerable")
-                    }
+                    var isVulnerable = status.equals(vulnerable)
+                    scanResults.addScan(host, isVulnerable, hostOS)
+                    alert(scanResults.getIPRange())
+                    fromWindow.webContents.send('host-scanned', host, isVulnerable, hostOS)
+                    fromWindow.webContents.send('scan-updated', scanResults)
                     currentHost.destroy()
                     break;
                 default:
@@ -92,8 +95,8 @@
         currentHost.setTimeout(timeout)
         currentHost.on('timeout', function () {
             status = 'closed'
-            console.log("Received data : " + currentHost.bytesRead)
-            console.log('Timeout (' + timeout + 'ms) occurred waiting for ' + host + ':' + port + ' to be available')
+            //console.log("Received data : " + currentHost.bytesRead)
+            //console.log('Timeout (' + timeout + 'ms) occurred waiting for ' + host + ':' + port + ' to be available')
             if (responses.length>0) {
                 fromWindow.webContents.send('host-scanned', host, "error", hostOS)
             }
@@ -104,7 +107,7 @@
         // exception
         currentHost.on('error', function (exception) {
             console.log("error: " + exception.code)
-            fromWindow.webContents.send('host-scanned', host, exception.code, hostOS)
+            //fromWindow.webContents.send('host-scanned', host, exception.code, hostOS)
             if (exception.code !== 'ECONNREFUSED') {
             error = exception
             } else {
