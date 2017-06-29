@@ -11,7 +11,7 @@ pipelines:
         caches:
           - node
         script: # Modify the commands below to build your repository.
-          - npm package-linux
-          - npm package-win
-          - npm package-mac
-          - npm create-installer-win
+          - npm run package-linux
+          - npm run package-win
+          - npm run package-mac
+          - npm run create-installer-win
