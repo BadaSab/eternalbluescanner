@@ -10,9 +10,9 @@ pipelines:
     - step:
         caches:
           - node
-        script: # Modify the commands below to build your repository.
+        script:
+          - apt-get update
+          - apt-get -y install wine
           - npm install
-          #- npm run package-linux
           - npm run package-win
-          #- npm run package-mac
           - npm run create-installer-win
