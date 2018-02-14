@@ -12,7 +12,7 @@ class Scan {
         this.hosts.push(hostResults)
     }
 
-    static gettIPRange() {
+    getIPRange() {
         return this.initialIP + " - " + this.finalIP
     }
 

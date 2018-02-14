@@ -80,10 +80,11 @@
                     var status=responses[3].slice(9,13)
                     var vulnerable = new Buffer([0x05,0x02,0x00,0xC0])
                     var isVulnerable = status.equals(vulnerable)
-                    scanResults.addScan(host, isVulnerable, hostOS)
-                    alert(scanResults.getIPRange())
-                    fromWindow.webContents.send('host-scanned', host, isVulnerable, hostOS)
-                    fromWindow.webContents.send('scan-updated', scanResults)
+                    if (isVulnerable) {
+                        scanResults.addScan(host, isVulnerable, hostOS)
+                        fromWindow.webContents.send('host-scanned', host, isVulnerable, hostOS)
+                        fromWindow.webContents.send('scan-updated', scanResults)
+                    }
                     currentHost.destroy()
                     break;
                 default:

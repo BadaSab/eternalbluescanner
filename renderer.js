@@ -13,6 +13,7 @@
       var Scan=require('./model/scan.js')
 
       var scanWindow
+      var scanResults
       var resTable = document.getElementById("resTable")
       var resTableBody = document.getElementById("results")
       
@@ -35,6 +36,7 @@
             var endIP=document.getElementById("endIP").value;
             //var launchScan = remote.require('./main').launchScan;
             if (ValidateIP(iniIP) && ValidateIP(endIP)) {
+                scanResults=new Scan(iniIP,endIP);
                 launchScan(iniIP,endIP);
             } else {
               alert("Invalid IP range")
@@ -99,7 +101,7 @@
     }
 
     ipcRenderer.on('scan-updated', function (event, scanResults) {
-        alert(scanResults.getIPRange)
+        alert(scanResults.getIPRange())
     })
 
     ipcRenderer.on('host-scanned', function (event, host, vulnerable, hostOS) {
@@ -123,6 +125,7 @@
         cHost.innerHTML=host
         cVulnerable.innerHTML=vulnerable
         cHostOS.innerHTML=hostOS
+        scanResults.addScan(host,vulnerable,hostOS)
       })
       
       document.onreadystatechange = function () {
