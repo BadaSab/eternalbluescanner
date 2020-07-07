@@ -19,7 +19,7 @@
   "author": "mvila",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^1.6.10",
+    "electron": "^9.1.0",
     "electron-packager": "^8.7.0",
     "electron-winstaller": "^2.5.2"
   }
